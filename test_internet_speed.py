@@ -4,18 +4,24 @@ from selenium.common.exceptions import ElementNotInteractableException
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
+import os
+import dotenv
 
 
 class TestInternetSpeed:
 
     def __init__(self):
+        dotenv.load_dotenv()
+        self.twitter_email = os.getenv("TWITTER_EMAIL")
+        self.twitter_password = os.getenv("TWITTER_PASSWORD")
         chrome_options = Options()
         chrome_options.add_experimental_option("detach", True)
         self.driver = webdriver.Chrome(options=chrome_options)
         speed_test_url = "https://www.speedtest.net/"
-        self.driver.get(speed_test_url)
+        # self.driver.get(speed_test_url)
         self.results = None
-        self.run_test()
+        # self.run_test()
         self.tweet_at_provider()
 
     def run_test(self):
@@ -48,4 +54,22 @@ class TestInternetSpeed:
                                         isp=isp_el.text)
 
     def tweet_at_provider(self):
-        print("Will tweet results...")
+        self.driver.execute_script("window.open('');")
+        twitter_tab = self.driver.window_handles[1]
+        self.driver.switch_to.window(twitter_tab)
+        self.driver.get("https://twitter.com/")
+        time.sleep(2)
+        login_el = self.driver.find_element(by=By.CSS_SELECTOR, value='a[href="/login"]')
+        login_el.click()
+        time.sleep(1)
+        username_input_el = self.driver.find_element(by=By.CSS_SELECTOR, value='input[autocomplete="username"]')
+        username_input_el.click()
+        username_input_el.send_keys(self.twitter_email, Keys.ENTER)
+        time.sleep(1)
+        password_input_el = self.driver.find_element(by=By.CSS_SELECTOR, value='input[autocomplete="current-password"]')
+        password_input_el.click()
+        password_input_el.send_keys(self.twitter_password, Keys.ENTER)
+        time.sleep(3)
+        tweet_text_el = self.driver.find_element(by=By.CSS_SELECTOR, value='div[aria-label="Tweet text"]')
+        tweet_text_el.click()
+        tweet_text_el.send_keys("Hi")
